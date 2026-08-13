@@ -20,11 +20,20 @@ RUN apt-get update && apt-get install -y \
     strongswan \
     libstrongswan-extra-plugins \
     xl2tpd \
-    pptpd \
     openvpn \
     ocserv \
-    accel-ppp \
+    wget \
     && rm -rf /var/lib/apt/lists/*
+
+# نصب Go (نسخه 1.22.5 یا بالاتر)
+RUN wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz && \
+    rm go1.22.5.linux-amd64.tar.gz
+
+# تنظیم متغیرهای محیطی Go
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV GOPATH="/go"
+ENV PATH="${GOPATH}/bin:${PATH}"
 
 # کلون کردن پروژه به‌صورت خودکار از گیت‌هاب
 RUN git clone https://github.com/Sir-MmD/vpn-ui.git /app
@@ -44,9 +53,6 @@ EXPOSE 443
 # متغیرهای محیطی
 ENV PANEL_PORT=443
 ENV PANEL_DB_PATH=/opt/vpn-ui/database.db
-
-# ایجاد نقطه اتصال برای ذخیره‌سازی دائمی دیتابیس
-VOLUME ["/opt/vpn-ui"]
 
 # اجرای اسکریپت نصب و راه‌اندازی پنل
 CMD ["/bin/bash", "-c", "cd /opt/vpn-ui && ./deploy.sh --port ${PANEL_PORT} && tail -f /dev/null"]
